@@ -1,5 +1,4 @@
 pub mod app;
-#[cfg(feature = "ssr")]
 pub mod ic_agent;
 pub mod server_functions;
 

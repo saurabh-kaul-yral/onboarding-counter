@@ -1,11 +1,13 @@
+use anyhow::{anyhow, Result};
 use candid::{Decode, Nat};
-use ic_agent::{export::Principal, identity::BasicIdentity, Agent};
-use anyhow::{Result,anyhow};
+use ic_agent::{export::Principal, Agent};
+use serde::{Deserialize, Serialize};
 
 /// IC Agent client for interacting with counter and caller canisters
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ICClient {
-    agent: Agent,
+    #[serde(skip)]
+    agent: Option<Agent>,
     counter_canister_id: Principal,
     caller_canister_id: Principal,
 }
@@ -37,17 +39,18 @@ impl ICClient {
             .map_err(|e| anyhow!("Invalid caller canister ID: {}", e))?;
 
         Ok(ICClient {
-            agent,
+            agent: Some(agent),
             counter_canister_id: counter_principal,
             caller_canister_id: caller_principal,
         })
     }
 
-   
-
     pub async fn caller_get(&self) -> Result<String> {
-        let response = self
+        let agent = self
             .agent
+            .as_ref()
+            .ok_or_else(|| anyhow!("Agent not available"))?;
+        let response = agent
             .update(&self.caller_canister_id, "call_get")
             .with_arg(candid::encode_args((&self.counter_canister_id,))?)
             .call_and_wait()
@@ -63,33 +66,14 @@ impl ICClient {
         }
     }
 
-    pub async fn caller_set(&self, value: u64) -> Result<()> {
-        let nat_value = Nat::from(value);
-
-        let response = self
-            .agent
-            .update(&self.caller_canister_id, "stubborn_set")
-            .with_arg(candid::encode_args((
-                &self.counter_canister_id,
-                &nat_value,
-            ))?)
-            .call_and_wait()
-            .await
-            .map_err(|e| anyhow!("Update failed: {}", e))?;
-
-        let result = Decode!(&response, Result<(), String>)
-            .map_err(|e| anyhow!("Failed to decode response: {}", e))?;
-
-        match result {
-            Ok(()) => Ok(()),
-            Err(err) => Err(anyhow!("Error: {}", err)),
-        }
-    }
-
+  
     /// Increment counter via caller canister
     pub async fn caller_increment(&self) -> Result<String> {
-        let response = self
+        let agent = self
             .agent
+            .as_ref()
+            .ok_or_else(|| anyhow!("Agent not available"))?;
+        let response = agent
             .update(&self.caller_canister_id, "call_increment")
             .with_arg(candid::encode_args((&self.counter_canister_id,))?)
             .call_and_wait()
@@ -107,8 +91,11 @@ impl ICClient {
 
     /// Decrement counter via caller canister
     pub async fn caller_decrement(&self) -> Result<String> {
-        let response = self
+        let agent = self
             .agent
+            .as_ref()
+            .ok_or_else(|| anyhow!("Agent not available"))?;
+        let response = agent
             .update(&self.caller_canister_id, "call_decrement")
             .with_arg(candid::encode_args((&self.counter_canister_id,))?)
             .call_and_wait()
@@ -120,11 +107,9 @@ impl ICClient {
 
         match result {
             Ok(value) => Ok(value.to_string()),
-            Err(err) =>  Err(anyhow!("Error: {}", err)),
+            Err(err) => Err(anyhow!("Error: {}", err)),
         }
     }
-
-  
 
     // =============================================================================
     // UTILITY METHODS
@@ -137,8 +122,11 @@ impl ICClient {
 
     /// Get agent principal (your identity)
     pub fn get_principal(&self) -> Result<Principal> {
-        Ok(self
+        let agent = self
             .agent
+            .as_ref()
+            .ok_or_else(|| anyhow!("Agent not available"))?;
+        Ok(agent
             .get_principal()
             .map_err(|e| anyhow!("Failed to get principal: {}", e))?)
     }

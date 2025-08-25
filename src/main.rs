@@ -2,7 +2,7 @@
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use axum::Router;
-    use candid::Decode;
+
     use leptos::logging::log;
     use leptos::prelude::provide_context;
     use leptos::prelude::*;
@@ -23,7 +23,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let routes = generate_route_list(App);
 
-    
     let app = Router::new()
         .leptos_routes_with_context(
             &leptos_options,
@@ -39,7 +38,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .fallback(leptos_axum::file_and_error_handler(shell))
         .with_state(leptos_options);
-
 
     // Start the server
     log!("🚀 Leptos server listening on http://{}", &addr);
