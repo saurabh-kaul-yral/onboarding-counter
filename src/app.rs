@@ -1,4 +1,4 @@
-use crate::ic_agent::{create_local_client, ICClient};
+use crate::ic_agent::{create_client, create_client_from_config, ICClient, ICConfig};
 use crate::server_functions::{CallerAction, ExecuteCallerAction};
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -177,11 +177,17 @@ pub fn App() -> impl IntoView {
     // Initialize the client on startup
     Effect::new(move || {
         spawn_local(async move {
-            match create_local_client("u6s2n-gx777-77774-qaaba-cai", "uxrrr-q7777-77774-qaaaq-cai")
-                .await
-            {
+            // Try to create client using environment-based configuration
+            match create_client().await {
                 Ok(client) => set_ic_client(Some(client)),
-                Err(_) => set_ic_client(None),
+                Err(_) => {
+                    // Fallback: use default local configuration
+                    let config = ICConfig::default_local();
+                    match create_client_from_config(&config).await {
+                        Ok(client) => set_ic_client(Some(client)),
+                        Err(_) => set_ic_client(None),
+                    }
+                }
             }
         });
     });

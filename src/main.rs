@@ -8,12 +8,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use onboarding_counter::app::*;
-    use onboarding_counter::ic_agent::create_local_client;
+    use onboarding_counter::ic_agent::create_client;
 
-    let counter_id = "u6s2n-gx777-77774-qaaba-cai";
-    let caller_id = "uxrrr-q7777-77774-qaaaq-cai";
-
-    let canister_client = create_local_client(counter_id, caller_id).await?;
+    let canister_client = create_client().await?;
 
     println!("\n🌐 Starting Leptos web server...");
 
