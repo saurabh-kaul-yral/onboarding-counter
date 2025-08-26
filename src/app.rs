@@ -7,6 +7,7 @@ use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
+
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
         <!DOCTYPE html>
@@ -181,13 +182,13 @@ pub fn App() -> impl IntoView {
 
     Effect::new(move || {
         let config = ICConfig::default_mainnet();
+        leptos::logging::log!("Config is {:?}", config);
         spawn_local(async move {
             match create_client_from_config(&config).await {
                 Ok(client) => set_ic_client(Some(client)),
                 Err(e) => panic!("Failed to create client: {}", e),
             }
         });
-
     });
 
     view! {
