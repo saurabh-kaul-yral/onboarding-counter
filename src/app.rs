@@ -1,6 +1,5 @@
 use crate::ic_agent::{create_client_from_config, ICClient, ICConfig};
 use crate::server_functions::{CallerAction, ExecuteCallerAction};
-use leptos::leptos_dom::logging::console_log;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -117,7 +116,6 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     spawn_local(async move {
                                         match ic_client.caller_get().await {
                                             Ok(value) =>{
-                                                console_log(&format!("Value Incoming is {value}"));
                                                 set_text(format!("Current Value: {}", value))
                                             },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
@@ -138,7 +136,6 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     spawn_local(async move {
                                         match ic_client.caller_increment().await {
                                             Ok(value) =>{
-                                                console_log(&format!("Value Incoming is {value}"));
                                                 set_text(format!("Current Value: {}", value))
                                             },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
@@ -159,7 +156,6 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     spawn_local(async move {
                                         match ic_client.caller_decrement().await {
                                             Ok(value) =>{
-                                                console_log(&format!("Value Incoming is {value}"));
                                                 set_text(format!("Current Value: {}", value))
                                             },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
