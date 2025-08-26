@@ -1,8 +1,8 @@
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
-use crate::ic_agent::ICClient;
+
+use crate::ic_agent::{ICConfig,ICClient};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CallerAction {
@@ -18,6 +18,8 @@ pub struct CallerResult {
     pub error: Option<String>,
     pub action: CallerAction,
 }
+
+
 
 #[server(ExecuteCallerAction, "/api")]
 pub async fn execute_counter_action(

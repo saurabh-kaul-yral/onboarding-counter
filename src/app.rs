@@ -1,5 +1,6 @@
-use crate::ic_agent::{create_client, create_client_from_config, ICClient, ICConfig};
+use crate::ic_agent::{create_client_from_config, ICClient, ICConfig};
 use crate::server_functions::{CallerAction, ExecuteCallerAction};
+use leptos::leptos_dom::logging::console_log;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -115,7 +116,10 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     let ic_client = ic_client.clone();
                                     spawn_local(async move {
                                         match ic_client.caller_get().await {
-                                            Ok(value) => set_text(format!("Current Value: {}", value)),
+                                            Ok(value) =>{
+                                                console_log(&format!("Value Incoming is {value}"));
+                                                set_text(format!("Current Value: {}", value))
+                                            },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
                                         }
                                     });
@@ -133,7 +137,10 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     let ic_client = ic_client.clone();
                                     spawn_local(async move {
                                         match ic_client.caller_increment().await {
-                                            Ok(value) => set_text(format!("Current Value: {}", value)),
+                                            Ok(value) =>{
+                                                console_log(&format!("Value Incoming is {value}"));
+                                                set_text(format!("Current Value: {}", value))
+                                            },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
                                         }
                                     });
@@ -151,7 +158,10 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
                                     let ic_client = ic_client.clone();
                                     spawn_local(async move {
                                         match ic_client.caller_decrement().await {
-                                            Ok(value) => set_text(format!("Current Value: {}", value)),
+                                            Ok(value) =>{
+                                                console_log(&format!("Value Incoming is {value}"));
+                                                set_text(format!("Current Value: {}", value))
+                                            },
                                             Err(e) => set_text(format!("Client Error: {}", e)),
                                         }
                                     });
@@ -171,25 +181,17 @@ fn ClientCallerButtons(set_text: WriteSignal<String>) -> impl IntoView {
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
-    // Create a signal to hold the ICClient
     let (ic_client, set_ic_client) = signal::<Option<ICClient>>(None);
 
-    // Initialize the client on startup
     Effect::new(move || {
+        let config = ICConfig::default_mainnet();
         spawn_local(async move {
-            // Try to create client using environment-based configuration
-            match create_client().await {
+            match create_client_from_config(&config).await {
                 Ok(client) => set_ic_client(Some(client)),
-                Err(_) => {
-                    // Fallback: use default local configuration
-                    let config = ICConfig::default_local();
-                    match create_client_from_config(&config).await {
-                        Ok(client) => set_ic_client(Some(client)),
-                        Err(_) => set_ic_client(None),
-                    }
-                }
+                Err(e) => panic!("Failed to create client: {}", e),
             }
         });
+
     });
 
     view! {

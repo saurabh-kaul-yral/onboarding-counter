@@ -8,9 +8,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use onboarding_counter::app::*;
-    use onboarding_counter::ic_agent::create_client;
+    use onboarding_counter::ic_agent::{create_client_from_config, load_env_config, ICConfig};
 
-    let canister_client = create_client().await?;
+    let ic_config = ICConfig::default_mainnet();
+    let canister_client = create_client_from_config(&ic_config).await?;
 
     println!("\n🌐 Starting Leptos web server...");
 
@@ -26,7 +27,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             routes,
             {
                 let canister_client = canister_client.clone();
-                move || provide_context(canister_client.clone())
+                move || {
+                    provide_context(canister_client.clone());
+                }
             },
             {
                 let leptos_options = leptos_options.clone();
