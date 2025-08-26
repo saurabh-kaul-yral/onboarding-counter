@@ -21,7 +21,3 @@ primary_region = 'bom'
   cpu_kind = 'shared'
   cpus = 1
   
-  [env]
-   DEPLOYMENT_ENV='prod'
-   COUNTER_CANISTER_ID='qmgff-sqaaa-aaaad-qhowa-cai'
-   CALLER_CANISTER_ID='qzbui-tyaaa-aaaad-qhovq-cai'
